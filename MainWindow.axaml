@@ -1,0 +1,61 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ResidueCalc.MainWindow"
+        Title="Residue Class Calculator"
+        Width="380" Height="560" CanResize="False"
+        WindowStartupLocation="CenterScreen"
+		Background="#F4F5F7">
+	<Window.Styles>
+		<Style Selector="Button">
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Margin" Value="3"/>
+			<Setter Property="Padding" Value="0,10"/>
+			<Setter Property="FontSize" Value="16"/>
+		</Style>
+	</Window.Styles>
+
+	<DockPanel Margin="24">
+		<TextBlock Text="Developer: Yulia Benediuk" Foreground="Gray"
+                   HorizontalAlignment="Center"
+                   DockPanel.Dock="Bottom"/>
+
+		<StackPanel Spacing="10">
+			<TextBlock Text="Residue Class Calculator" FontSize="22" FontWeight="Bold" Foreground="#1D3557"/>
+			<TextBox x:Name="MBox" BorderBrush="#1D3557" Watermark="Modulus m"/>
+			<UniformGrid Columns="2">
+				<TextBox x:Name="ABox" BorderBrush="#1D3557" Watermark="a" Margin="0,0,4,0"/>
+				<TextBox x:Name="BBox" BorderBrush="#1D3557" Watermark="b" Margin="4,0,0,0"/>
+			</UniformGrid>
+			<Border Background="#E8EAEE" CornerRadius="10" Padding="14">
+				<DockPanel>
+					<TextBlock Text="Result c" VerticalAlignment="Center" Foreground="#1D3557"/>
+					<TextBlock x:Name="ResultText" FontSize="30" FontWeight="Bold"
+                               HorizontalAlignment="Right" Foreground="#1D3557"/>
+				</DockPanel>
+			</Border>
+			<UniformGrid Columns="4">
+				<Button Content="a + b" Click="OnAdd" Background="#1D3557" Foreground="White"/>
+				<Button Content="a − b" Click="OnSub" Background="#1D3557" Foreground="White"/>
+				<Button Content="a * b" Click="OnMul" Background="#1D3557" Foreground="White"/>
+				<Button Content="a ^ b" Click="OnPow" Background="#1D3557" Foreground="White"/>
+				<Button Content="−a" Click="OnNeg" Background="#E8EAEE"/>
+				<Button Content="a⁻¹" Click="OnInv" Background="#E8EAEE"/>
+				<Button Content="a / b" Click="OnSoon" Background="#E8EAEE"/>
+				<Button Content="Prime?" Click="OnIsPrime" Background="#1D3557" Foreground="White"/>
+				<Button Content="Prime ≤ A" Click="OnGenPrime" Background="#1D3557" Foreground="White"/>
+				<Button Content="GCD" Click="OnGcd" Background="#1D3557" Foreground="White"/>
+				<Button Content="φ(n)" Click="OnPhi" Background="#1D3557" Foreground="White"/>
+				<Button Content="ord(a)" Click="OnOrder" Background="#E8EAEE"/>
+				<Button Content="Gen?" Click="OnIsGen" Background="#E8EAEE"/>
+				<Button Content="Min g" Click="OnMinGen" Background="#E8EAEE"/>
+				<Button Content="All g" Click="OnAllGen" Background="#E8EAEE"/>
+				<Button Content="Clear" Click="OnClear" Background="#E8EAEE" Foreground="Red"/>
+			</UniformGrid>
+
+			<TextBlock x:Name="InfoText" TextWrapping="Wrap" Foreground="#4F46E5"/>
+
+			<TextBlock x:Name="ErrorText" Foreground="#B91C1C" TextWrapping="Wrap"/>
+		</StackPanel>
+	</DockPanel>
+</Window>
