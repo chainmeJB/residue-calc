@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ResidueCalc.MainWindow"
         Title="Residue Class Calculator"
-        Width="380" Height="560" CanResize="False"
+        Width="380" Height="660" CanResize="False"
         WindowStartupLocation="CenterScreen"
 		Background="#F4F5F7">
 	<Window.Styles>
@@ -26,6 +26,10 @@
 			<UniformGrid Columns="2">
 				<TextBox x:Name="ABox" BorderBrush="#1D3557" Watermark="a" Margin="0,0,4,0"/>
 				<TextBox x:Name="BBox" BorderBrush="#1D3557" Watermark="b" Margin="4,0,0,0"/>
+			</UniformGrid>
+			<UniformGrid Columns="2">
+				<TextBox x:Name="XBox" BorderBrush="#1D3557" Watermark="Secret A" Margin="0,0,4,0"/>
+				<TextBox x:Name="YBox" BorderBrush="#1D3557" Watermark="Secret B" Margin="4,0,0,0"/>
 			</UniformGrid>
 			<Border Background="#E8EAEE" CornerRadius="10" Padding="14">
 				<DockPanel>
@@ -52,9 +56,8 @@
 				<Button Content="All g" Click="OnAllGen" Background="#E8EAEE"/>
 				<Button Content="Clear" Click="OnClear" Background="#E8EAEE" Foreground="Red"/>
 			</UniformGrid>
-
+			<Button Content="Diffie-Hellman" Click="OnDh" Background="#1D3557" Foreground="White"/>
 			<TextBlock x:Name="InfoText" TextWrapping="Wrap" Foreground="#4F46E5"/>
-
 			<TextBlock x:Name="ErrorText" Foreground="#B91C1C" TextWrapping="Wrap"/>
 		</StackPanel>
 	</DockPanel>

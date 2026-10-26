@@ -92,7 +92,7 @@ public partial class MainWindow : Window
 
     void OnClear(object? s, RoutedEventArgs e)
     {
-        MBox.Text = ABox.Text = BBox.Text = ErrorText.Text = InfoText.Text = "";
+        MBox.Text = ABox.Text = BBox.Text = XBox.Text = YBox.Text = ErrorText.Text = InfoText.Text = "";
         ResultText.Text = "";
     }
 
@@ -226,5 +226,25 @@ public partial class MainWindow : Window
         list.Sort();
         ResultText.Text = list.Count.ToString();
         InfoText.Text = "Generators: " + string.Join(", ", list);
+    }
+
+    void OnDh(object? s, RoutedEventArgs e)
+    {
+        ErrorText.Text = ""; ResultText.Text = ""; InfoText.Text = "";
+        if (!ReadPrime(out long p)) return;
+        if (!long.TryParse(ABox.Text, out long g) || g < 2 || g >= p)
+        { ErrorText.Text = "g (field a) must be an integer from 2 to m-1"; return; }
+        if (!long.TryParse(XBox.Text, out long x) || !long.TryParse(YBox.Text, out long y)
+            || x < 1 || y < 1 || x >= p - 1 || y >= p - 1)
+        { ErrorText.Text = "Secrets A and B must be integers from 1 to m-2"; return; }
+
+        long rA = PowFast(g, x, p);
+        long rB = PowFast(g, y, p);
+        long kA = PowFast(rB, x, p);
+        long kB = PowFast(rA, y, p);
+
+        ResultText.Text = kA == kB ? kA.ToString() : "error";
+        InfoText.Text = "rA = " + rA + ", rB = " + rB + "\nK(A) = " + kA + ", K(B) = " + kB
+            + (IsGenerator(g, p) ? "" : "\nWarning: g is not a generator");
     }
 }
