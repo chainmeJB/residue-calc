@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ResidueCalc.MainWindow"
         Title="Residue Class Calculator"
-        Width="380" Height="660" CanResize="False"
+        Width="480" Height="820" CanResize="False"
         WindowStartupLocation="CenterScreen"
 		Background="#F4F5F7">
 	<Window.Styles>
@@ -31,6 +31,13 @@
 				<TextBox x:Name="XBox" BorderBrush="#1D3557" Watermark="Secret A" Margin="0,0,4,0"/>
 				<TextBox x:Name="YBox" BorderBrush="#1D3557" Watermark="Secret B" Margin="4,0,0,0"/>
 			</UniformGrid>
+			<UniformGrid Columns="2">
+                <TextBox x:Name="PBox" BorderBrush="#1D3557" Watermark="p" Margin="0,0,4,0"/>
+                <TextBox x:Name="QBox" BorderBrush="#1D3557" Watermark="q" Margin="4,0,0,0"/>
+            </UniformGrid>
+			
+			<TextBox x:Name="WordBox" BorderBrush="#1D3557" Watermark="Word, or numbers separated by spaces"/>
+					
 			<Border Background="#E8EAEE" CornerRadius="10" Padding="14">
 				<DockPanel>
 					<TextBlock Text="Result c" VerticalAlignment="Center" Foreground="#1D3557"/>
@@ -38,25 +45,30 @@
                                HorizontalAlignment="Right" Foreground="#1D3557"/>
 				</DockPanel>
 			</Border>
-			<UniformGrid Columns="4">
+			<UniformGrid Columns="5">
 				<Button Content="a + b" Click="OnAdd" Background="#1D3557" Foreground="White"/>
 				<Button Content="a − b" Click="OnSub" Background="#1D3557" Foreground="White"/>
 				<Button Content="a * b" Click="OnMul" Background="#1D3557" Foreground="White"/>
 				<Button Content="a ^ b" Click="OnPow" Background="#1D3557" Foreground="White"/>
-				<Button Content="−a" Click="OnNeg" Background="#E8EAEE"/>
+				<Button Content="−a" Click="OnNeg" Background="#1D3557" Foreground="White"/>
 				<Button Content="a⁻¹" Click="OnInv" Background="#E8EAEE"/>
 				<Button Content="a / b" Click="OnSoon" Background="#E8EAEE"/>
-				<Button Content="Prime?" Click="OnIsPrime" Background="#1D3557" Foreground="White"/>
-				<Button Content="Prime ≤ A" Click="OnGenPrime" Background="#1D3557" Foreground="White"/>
-				<Button Content="GCD" Click="OnGcd" Background="#1D3557" Foreground="White"/>
+				<Button Content="Prime?" Click="OnIsPrime" Background="#E8EAEE"/>
+				<Button Content="Prime ≤ A" Click="OnGenPrime" Background="#E8EAEE"/>
+				<Button Content="GCD" Click="OnGcd" Background="#E8EAEE"/>
 				<Button Content="φ(n)" Click="OnPhi" Background="#1D3557" Foreground="White"/>
-				<Button Content="ord(a)" Click="OnOrder" Background="#E8EAEE"/>
-				<Button Content="Gen?" Click="OnIsGen" Background="#E8EAEE"/>
-				<Button Content="Min g" Click="OnMinGen" Background="#E8EAEE"/>
-				<Button Content="All g" Click="OnAllGen" Background="#E8EAEE"/>
-				<Button Content="Clear" Click="OnClear" Background="#E8EAEE" Foreground="Red"/>
+				<Button Content="ord(a)" Click="OnOrder" Background="#1D3557" Foreground="White"/>
+				<Button Content="Gen?" Click="OnIsGen" Background="#1D3557" Foreground="White"/>
+				<Button Content="Min g" Click="OnMinGen" Background="#1D3557" Foreground="White"/>
+				<Button Content="All g" Click="OnAllGen" Background="#1D3557" Foreground="White"/>
 			</UniformGrid>
-			<Button Content="Diffie-Hellman" Click="OnDh" Background="#1D3557" Foreground="White"/>
+			<Button Content="Diffie-Hellman" Click="OnDh" Background="#E8EAEE"/>
+			<UniformGrid Columns="3">
+                <Button Content="RSA keys" Click="OnRsaKeys" Background="#1D3557" Foreground="White"/>
+                <Button Content="Encrypt" Click="OnEncrypt" Background="#1D3557" Foreground="White"/>
+                <Button Content="Decrypt" Click="OnDecrypt" Background="#1D3557" Foreground="White"/>
+            </UniformGrid>
+			<Button Content="Clear" Click="OnClear" Background="#E8EAEE" Foreground="Red"/>
 			<TextBlock x:Name="InfoText" TextWrapping="Wrap" Foreground="#4F46E5"/>
 			<TextBlock x:Name="ErrorText" Foreground="#B91C1C" TextWrapping="Wrap"/>
 		</StackPanel>

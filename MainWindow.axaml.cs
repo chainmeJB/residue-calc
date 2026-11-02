@@ -1,12 +1,18 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ResidueCalc;
 
 public partial class MainWindow : Window
 {
+    const string UA = "АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ";
+    const string EN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    string lastAlphabet = EN;
+
     public MainWindow() { InitializeComponent(); }
 
     static long Mod(long x, long m) => ((x % m) + m) % m;
@@ -169,6 +175,12 @@ public partial class MainWindow : Window
         return true;
     }
 
+    static string Decode(List<long> codes, string alphabet)
+    {
+        return new string(codes.Select(d =>
+            d >= 1 && d <= alphabet.Length ? alphabet[(int)d - 1] : '?').ToArray());
+    }
+
     bool ReadPrime(out long p)
     {
         if (!long.TryParse(MBox.Text, out p) || p < 3 || p > 2000000000 || !IsPrime(p))
@@ -246,5 +258,100 @@ public partial class MainWindow : Window
         ResultText.Text = kA == kB ? kA.ToString() : "error";
         InfoText.Text = "rA = " + rA + ", rB = " + rB + "\nK(A) = " + kA + ", K(B) = " + kB
             + (IsGenerator(g, p) ? "" : "\nWarning: g is not a generator");
+    }
+
+    void OnRsaKeys(object? s, RoutedEventArgs e)
+    {
+        ErrorText.Text = ""; ResultText.Text = ""; InfoText.Text = "";
+        if (!long.TryParse(PBox.Text, out long p) || !long.TryParse(QBox.Text, out long q)
+            || p < 3 || q < 3 || !IsPrime(p) || !IsPrime(q) || p == q)
+        { ErrorText.Text = "p and q must be different primes"; return; }
+        if (p * q > 2000000000)
+        { ErrorText.Text = "p*q must be at most 2000000000"; return; }
+
+        long m = p * q;
+        long n = (p - 1) * (q - 1);
+        long phiN = Phi(n);
+
+        var pairs = new List<string>();
+        for (long x = 2; x < n && pairs.Count < 5; x++)
+            if (Gcd(x, n) == 1)
+                pairs.Add("(" + x + ", " + PowFast(x, phiN - 1, n) + ")");
+
+        MBox.Text = m.ToString();
+        ResultText.Text = m.ToString();
+        InfoText.Text = "m = " + m + ", n = " + n + ", phi(n) = " + phiN
+            + ", keys = " + phiN / 2 + "\nPairs (x, y): " + string.Join(" ", pairs);
+
+        if (long.TryParse(ABox.Text, out long xs) && xs > 1 && xs < n)
+        {
+            if (Gcd(xs, n) != 1)
+                ErrorText.Text = "x is not coprime with n";
+            else
+                InfoText.Text += "\nFor x = " + xs + ": y = " + PowFast(xs, phiN - 1, n);
+        }
+    }
+
+    void OnEncrypt(object? s, RoutedEventArgs e)
+    {
+        ErrorText.Text = ""; ResultText.Text = ""; InfoText.Text = "";
+        if (!long.TryParse(MBox.Text, out long m) || m < 2 || m > 2000000000)
+        { ErrorText.Text = "m must be an integer from 2 to 2000000000"; return; }
+        if (!long.TryParse(BBox.Text, out long key) || key < 1)
+        { ErrorText.Text = "Enter the public key y in field b"; return; }
+
+        string word = (WordBox.Text ?? "").ToUpper().Replace(" ", "");
+        if (word.Length == 0)
+        { ErrorText.Text = "Enter a word"; return; }
+
+        bool hasUa = word.Any(c => UA.Contains(c));
+        bool hasEn = word.Any(c => EN.Contains(c));
+        if (hasUa && hasEn)
+        { ErrorText.Text = "Do not mix Ukrainian and English letters"; return; }
+        if (!hasUa && !hasEn)
+        { ErrorText.Text = "Use Ukrainian or English letters"; return; }
+
+        string alphabet = hasEn ? EN : UA;
+        var codes = new List<long>();
+        foreach (char c in word)
+        {
+            int idx = alphabet.IndexOf(c) + 1;
+            if (idx == 0)
+            { ErrorText.Text = "Letter '" + c + "' is not in the " + (hasEn ? "English" : "Ukrainian") + " alphabet"; return; }
+            if (idx >= m)
+            { ErrorText.Text = "Letter code must be less than m"; return; }
+            codes.Add(idx);
+        }
+
+        lastAlphabet = alphabet;
+        ResultText.Text = string.Join(" ", codes.Select(a => PowFast(a, key, m)));
+        InfoText.Text = "Alphabet: " + (hasEn ? "English" : "Ukrainian")
+            + "\nCodes: " + string.Join(" ", codes);
+    }
+
+    void OnDecrypt(object? s, RoutedEventArgs e)
+    {
+        ErrorText.Text = ""; ResultText.Text = ""; InfoText.Text = "";
+        if (!long.TryParse(MBox.Text, out long m) || m < 2 || m > 2000000000)
+        { ErrorText.Text = "m must be an integer from 2 to 2000000000"; return; }
+        if (!long.TryParse(BBox.Text, out long key) || key < 1)
+        { ErrorText.Text = "Enter the secret key x in field b"; return; }
+
+        var parts = (WordBox.Text ?? "").Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+        var nums = new List<long>();
+        foreach (var part in parts)
+        {
+            if (!long.TryParse(part, out long v) || v < 0 || v >= m)
+            { ErrorText.Text = "Enter numbers from 0 to m-1 separated by spaces"; return; }
+            nums.Add(v);
+        }
+        if (nums.Count == 0)
+        { ErrorText.Text = "Enter the encrypted numbers"; return; }
+
+        var dec = nums.Select(b => PowFast(b, key, m)).ToList();
+        ResultText.Text = Decode(dec, lastAlphabet);
+        InfoText.Text = "Codes: " + string.Join(" ", dec)
+            + "\nUkrainian: " + Decode(dec, UA)
+            + "\nEnglish: " + Decode(dec, EN);
     }
 }
