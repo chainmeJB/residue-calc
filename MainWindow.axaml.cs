@@ -3,6 +3,9 @@ using Avalonia.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 
 namespace ResidueCalc;
 
@@ -98,7 +101,7 @@ public partial class MainWindow : Window
 
     void OnClear(object? s, RoutedEventArgs e)
     {
-        MBox.Text = ABox.Text = BBox.Text = XBox.Text = YBox.Text = ErrorText.Text = InfoText.Text = "";
+        MBox.Text = ABox.Text = BBox.Text = XBox.Text = YBox.Text = PBox.Text = QBox.Text = WordBox.Text = KBox.Text = ErrorText.Text = InfoText.Text = "";
         ResultText.Text = "";
     }
 
@@ -354,4 +357,141 @@ public partial class MainWindow : Window
             + "\nUkrainian: " + Decode(dec, UA)
             + "\nEnglish: " + Decode(dec, EN);
     }
+
+    void OnElgKeys(object? s, RoutedEventArgs e)
+    {
+        ErrorText.Text = ""; ResultText.Text = ""; InfoText.Text = "";
+        if (!ReadPrime(out long p)) return;
+        if (!long.TryParse(ABox.Text, out long g) || g < 2 || g > p - 2)
+        { ErrorText.Text = "g (field a) must be an integer from 2 to m-2"; return; }
+        if (!IsGenerator(g, p))
+        { ErrorText.Text = "g is not a generator of the group"; return; }
+        if (!long.TryParse(XBox.Text, out long x) || x < 2 || x > p - 2)
+        { ErrorText.Text = "Secret x (field Secret A) must be an integer from 2 to m-2"; return; }
+
+        long y = PowFast(g, x, p);
+        YBox.Text = y.ToString();
+        ResultText.Text = y.ToString();
+        InfoText.Text = "Public: p = " + p + ", g = " + g + ", y = " + y + "\nSecret: x = " + x;
+    }
+
+    bool ReadCodes(long p, out List<long> codes, out string alphabet)
+    {
+        codes = new List<long>();
+        alphabet = UA;
+        string word = (WordBox.Text ?? "").ToUpper().Replace(" ", "");
+        if (word.Length == 0)
+        { ErrorText.Text = "Enter a word"; return false; }
+
+        bool hasUa = word.Any(c => UA.Contains(c));
+        bool hasEn = word.Any(c => EN.Contains(c));
+        if (hasUa && hasEn)
+        { ErrorText.Text = "Do not mix Ukrainian and English letters"; return false; }
+        if (!hasUa && !hasEn)
+        { ErrorText.Text = "Use Ukrainian or English letters"; return false; }
+
+        alphabet = hasEn ? EN : UA;
+        foreach (char c in word)
+        {
+            int idx = alphabet.IndexOf(c) + 1;
+            if (idx == 0)
+            { ErrorText.Text = "Letter '" + c + "' is not in the selected alphabet"; return false; }
+            if (idx >= p)
+            { ErrorText.Text = "Letter code must be less than m"; return false; }
+            codes.Add(idx);
+        }
+        return true;
+    }
+
+    void OnElgEnc(object? s, RoutedEventArgs e)
+    {
+        ErrorText.Text = ""; ResultText.Text = ""; InfoText.Text = "";
+        if (!ReadPrime(out long p)) return;
+        if (!long.TryParse(ABox.Text, out long g) || g < 2 || g > p - 2)
+        { ErrorText.Text = "g (field a) must be an integer from 2 to m-2"; return; }
+        if (!long.TryParse(YBox.Text, out long y) || y < 1 || y >= p)
+        { ErrorText.Text = "Public key y (field Secret B) must be from 1 to m-1"; return; }
+        if (!ReadCodes(p, out var codes, out string alphabet)) return;
+
+        var keys = new List<long>();
+        var kParts = (KBox.Text ?? "").Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+        if (kParts.Length == 0)
+        {
+            if (p - 3 < codes.Count)
+            { ErrorText.Text = "m is too small for different session keys"; return; }
+            var rnd = new Random();
+            while (keys.Count < codes.Count)
+            {
+                long k = rnd.NextInt64(2, p - 1);
+                if (!keys.Contains(k)) keys.Add(k);
+            }
+        }
+        else
+        {
+            foreach (var part in kParts)
+            {
+                if (!long.TryParse(part, out long k) || k < 2 || k > p - 2)
+                { ErrorText.Text = "Each session key must be an integer from 2 to m-2"; return; }
+                keys.Add(k);
+            }
+            if (keys.Count != codes.Count)
+            { ErrorText.Text = "Number of session keys must equal the number of letters"; return; }
+            if (keys.Distinct().Count() != keys.Count)
+            { ErrorText.Text = "Session keys must be different"; return; }
+        }
+
+        lastAlphabet = alphabet;
+        var pairs = new List<string>();
+        for (int i = 0; i < codes.Count; i++)
+        {
+            long a = PowFast(g, keys[i], p);
+            long b = PowFast(y, keys[i], p) * codes[i] % p;
+            pairs.Add("(" + a + "," + b + ")");
+        }
+        ResultText.Text = string.Join(" ", pairs);
+        InfoText.Text = "Alphabet: " + (alphabet == EN ? "English" : "Ukrainian")
+            + "\nCodes: " + string.Join(" ", codes)
+            + "\nSession keys: " + string.Join(" ", keys);
+    }
+
+    void OnElgDec(object? s, RoutedEventArgs e)
+    {
+        ErrorText.Text = ""; ResultText.Text = ""; InfoText.Text = "";
+        if (!ReadPrime(out long p)) return;
+        if (!long.TryParse(XBox.Text, out long x) || x < 2 || x > p - 2)
+        { ErrorText.Text = "Secret x (field Secret A) must be an integer from 2 to m-2"; return; }
+
+        var nums = Regex.Matches(WordBox.Text ?? "", @"\d+")
+            .Select(mt => long.Parse(mt.Value)).ToList();
+        if (nums.Count == 0 || nums.Count % 2 != 0)
+        { ErrorText.Text = "Enter pairs a,b: (29,33) (42,6) ..."; return; }
+        if (nums.Any(v => v >= p))
+        { ErrorText.Text = "All numbers must be less than m"; return; }
+
+        var dec = new List<long>();
+        for (int i = 0; i < nums.Count; i += 2)
+        {
+            long a = nums[i], b = nums[i + 1];
+            if (a == 0)
+            { ErrorText.Text = "a must not be 0"; return; }
+            dec.Add(b * PowFast(a, p - 1 - x, p) % p);
+        }
+
+        ResultText.Text = Decode(dec, lastAlphabet);
+        InfoText.Text = "Codes: " + string.Join(" ", dec)
+            + "\nUkrainian: " + Decode(dec, UA)
+            + "\nEnglish: " + Decode(dec, EN);
+    }
+
+    async Task CopyText(string? text, Button btn)
+    {
+        if (string.IsNullOrEmpty(text) || Clipboard == null) return;
+        await Clipboard.SetTextAsync(text);
+        btn.Content = "Copied";
+        await Task.Delay(1200);
+        btn.Content = "Copy";
+    }
+
+    async void OnCopy(object? s, RoutedEventArgs e) => await CopyText(ResultText.Text, CopyBtn);
+
 }

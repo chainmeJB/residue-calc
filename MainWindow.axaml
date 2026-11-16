@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ResidueCalc.MainWindow"
         Title="Residue Class Calculator"
-        Width="480" Height="820" CanResize="False"
+        Width="480" Height="940" CanResize="False"
         WindowStartupLocation="CenterScreen"
 		Background="#F4F5F7">
 	<Window.Styles>
@@ -37,12 +37,22 @@
             </UniformGrid>
 			
 			<TextBox x:Name="WordBox" BorderBrush="#1D3557" Watermark="Word, or numbers separated by spaces"/>
-					
+			
+			<TextBox x:Name="KBox" BorderBrush="#1D3557" Watermark="Session keys k, e.g. 5 8 13 (empty = random)"/>
+
 			<Border Background="#E8EAEE" CornerRadius="10" Padding="14">
 				<DockPanel>
-					<TextBlock Text="Result c" VerticalAlignment="Center" Foreground="#1D3557"/>
+					<StackPanel DockPanel.Dock="Left" VerticalAlignment="Center" Spacing="6">
+						<TextBlock Text="Result c" Foreground="#1D3557"/>
+						<Button x:Name="CopyBtn" Content="Copy" Click="OnCopy"
+								Padding="10,3" FontSize="12" Margin="0"
+								HorizontalAlignment="Left"
+								Background="Transparent" Foreground="#1D3557"
+								/>
+					</StackPanel>
 					<TextBlock x:Name="ResultText" FontSize="30" FontWeight="Bold"
-                               HorizontalAlignment="Right" Foreground="#1D3557"/>
+							   HorizontalAlignment="Right" VerticalAlignment="Center"
+							   TextWrapping="Wrap" Foreground="#1D3557"/>
 				</DockPanel>
 			</Border>
 			<UniformGrid Columns="5">
@@ -68,7 +78,16 @@
                 <Button Content="Encrypt" Click="OnEncrypt" Background="#1D3557" Foreground="White"/>
                 <Button Content="Decrypt" Click="OnDecrypt" Background="#1D3557" Foreground="White"/>
             </UniformGrid>
-			<Button Content="Clear" Click="OnClear" Background="#E8EAEE" Foreground="Red"/>
+			
+			<UniformGrid Columns="3">
+                <Button Content="ElGamal keys" Click="OnElgKeys" Background="#E8EAEE"/>
+                <Button Content="ElGamal enc" Click="OnElgEnc" Background="#E8EAEE"/>
+                <Button Content="ElGamal dec" Click="OnElgDec" Background="#E8EAEE"/>
+            </UniformGrid>	
+			
+			<Button Content="Clear" Click="OnClear" Background="#1D3557" Foreground="Red"/>
+			
+		
 			<TextBlock x:Name="InfoText" TextWrapping="Wrap" Foreground="#4F46E5"/>
 			<TextBlock x:Name="ErrorText" Foreground="#B91C1C" TextWrapping="Wrap"/>
 		</StackPanel>
